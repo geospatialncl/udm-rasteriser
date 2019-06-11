@@ -19,8 +19,8 @@ class Config:
     __conf = {
             
         # NISMOD-DB++ API  
-        'NISMOD_DB_USERNAME' : 'ndh729',
-        'NISMOD_DB_PASSWORD' : 'jR6#kPPf3%xvD',
+        'NISMOD_DB_USERNAME' : 'API_USERNAME_HERE',
+        'NISMOD_DB_PASSWORD' : 'API_PASSWORD_HERE',
         'NISMOD_DB_API_URL'  : 'https://www.nismod.ac.uk/api/data',                
         
         # Logging

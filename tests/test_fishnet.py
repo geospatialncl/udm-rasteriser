@@ -19,3 +19,5 @@ logging.basicConfig(
     filemode='w')
 
 FishNet('test_fishnet.shp', bbox=[414650, 563500, 429600, 575875]).create()
+
+# Then check in QGIS that we have something like what we want...
