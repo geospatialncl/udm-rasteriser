@@ -1,5 +1,7 @@
 data
 logs
+docs
 test_data_from_ali
 __pycache__
 experimental
+classes/api_credentials.ini

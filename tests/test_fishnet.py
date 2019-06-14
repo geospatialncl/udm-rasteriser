@@ -9,7 +9,10 @@ Created on Thu Jun  6 12:17:17 2019
 """
 
 import logging
-from classes import config, fishnet
+import sys
+sys.path.append('..')
+
+from classes import Config, FishNet
 
 logging.basicConfig(
     level=Config.get('LOG_LEVEL'),
@@ -18,6 +21,6 @@ logging.basicConfig(
     filename=Config.get('LOG_FILE'),
     filemode='w')
 
-FishNet('test_fishnet.shp', bbox=[414650, 563500, 429600, 575875]).create()
+FishNet(outfile=None, outformat='GeoJSON', bbox=[414650, 563500, 429600, 575875]).create()
 
 # Then check in QGIS that we have something like what we want...

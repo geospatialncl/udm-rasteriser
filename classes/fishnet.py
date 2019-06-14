@@ -9,42 +9,99 @@ Created on Wed Jun  5 14:41:41 2019
 """
 
 import os, traceback, logging
-import ogr
+import uuid
+import gdal, ogr
 from math import ceil
 import requests
 from geopandas import GeoDataFrame
+from cerberus import Validator
 from classes import Config
 
-class FishNet:    
+class FishNet:
+
+    ARG_SCHEMA = {
+        'outfile': {
+            'type': 'string',
+            'required': False,
+            'nullable': True
+        },
+        'outformat': {
+            'type': 'string',
+            'allowed': ['ESRI Shapefile', 'GeoJSON']
+        },
+        'lad': {
+            'type': 'list',
+            'required': False,
+            'nullable': True,
+            'schema': {
+                'type': 'string',
+                'regex': '^[A-Z][0-9]{8}$'
+            }
+        },
+        'bbox': {
+            'type': 'list',
+            'required': False,
+            'schema': {
+                'type': 'float',
+                'min': -100000.0,
+                'max': 1250000.0
+            }
+        },          
+        'netsize': {
+            'type': 'float',
+            'min': 10.0,
+            'max': 10000.0
+        }
+    }    
     
-    def __init__(self, outfile, outformat='ESRI Shapefile', lad=None, bbox=[90000.0, 10000.0, 400000.0, 660000.0], netsize=100.0):
+    def __init__(self, 
+                 outfile=None, 
+                 outformat='GeoJSON', 
+                 lad=None,
+                 bbox=[90000.0, 10000.0, 400000.0, 660000.0], 
+                 netsize=100.0):
         """
         Constructor
         
         Keyword arguments:
-        outfile    -- filename to write the fishnet output to (required)
-        outformat  -- Shapefile|GeoJSON (default 'ESRI Shapefile')        
+        outfile    -- filename to write the fishnet output to (default None, indicating return the data as GeoJSON string)
+        outformat  -- ESRI Shapefile|GeoJSON, (default 'GeoJSON')
         lad        -- Local Authority District code(s) to deduce bounds from ('all' to use all) 
                       (default None, will be used preferentially to bbox if supplied)
         bbox       -- Bounding box of interest (default to bounding box of England and Wales)
         netsize    -- Resolution of the grid in metres (default 100.0)
+        
+        Returns:
+        full file path (outfile supplied), or GeoJSON string (outfile not supplied)
         """
-        if not outfile:
-            raise ValueError('Output filename should be supplied')
         
-        if outformat != 'ESRI Shapefile' and outformat != 'GeoJSON':
-            raise ValueError('Output formats allowed are ESRI Shapefile and GeoJSON, not {}'.format(outformat))
-            
-        self.outfile   = outfile
-        self.outformat = outformat
-        self.lad       = lad
-        self.bbox      = bbox
-        self.netsize   = netsize
+        self.logger = logging.getLogger('Fishnet generation') 
         
-        args = vars(self)
+        if not outfile and outformat == 'ESRI Shapefile':
+            raise ValueError('Output filename should be supplied for writing to Shapefile')
         
-        self.logger    = logging.getLogger('Fishnet generation')                
-        self.logger.info(', '.join('%s: %s' % arg for arg in args.items()))
+        args = {
+            'outfile': outfile,
+            'outformat': outformat,
+            'lad': lad,
+            'bbox': bbox,
+            'netsize': netsize
+        }
+        v = Validator()
+        args_ok = v.validate(args, self.ARG_SCHEMA)            
+        if args_ok:
+            # Validated arguments ok                                 
+            self.logger.info(', '.join('%s: %s' % arg for arg in args.items()))
+            self.outfile   = outfile
+            self.outformat = outformat
+            self.lad       = lad
+            self.bbox      = bbox
+            self.netsize   = netsize
+        else:
+            # Failed validation
+            self.logger.warning('Argument validation failed, errors follow:')
+            for name, errmsg in v.errors:
+                self.logger.warning('--- {} returned "{}"'.format(name, errmsg))
         
     def create(self):
         """
@@ -84,27 +141,33 @@ class FishNet:
             ring_x_right_origin = xmin + grid_width
             ring_y_top_origin = ymax
             ring_y_bottom_origin = ymax - grid_height
-        
-            # Create output file
+            
             out_driver = ogr.GetDriverByName(self.outformat)
-            if not os.path.isabs(self.outfile):
-                # Relative path => so prepend data directory (does NOT handle making subdirectories here)
-                data_dir = Config.get('DATA_DIRECTORY')
-                self.logger.info('Relative path supplied, assume relative to data directory {}'.format(data_dir))
-                self.outfile = os.path.join(data_dir, self.outfile)
+        
+            output_file = self.outfile
+            if output_file is None:
+                # Stream the data to memory
+                output_file = '/vsimem/{}.geojson'.format(uuid.uuid4().hex)
             else:
-                # Absolute path => ensure all directories are present before writing
-                try:
-                    os.makedirs(os.path.dirname(self.outfile), exist_ok=True)
-                except OSError as ose:
-                    self.logger.warning('Failed to create subdirectory for output file')
-                    raise
-            # Delete any pre-existing version of output file        
-            if os.path.exists(self.outfile):
-                os.remove(self.outfile)
+                # Create output file                
+                if not os.path.isabs(output_file):
+                    # Relative path => so prepend data directory (does NOT handle making subdirectories here)
+                    data_dir = Config.get('DATA_DIRECTORY')
+                    self.logger.info('Relative path supplied, assume relative to data directory {}'.format(data_dir))
+                    output_file = os.path.join(data_dir, output_file)
+                else:
+                    # Absolute path => ensure all directories are present before writing
+                    try:
+                        os.makedirs(os.path.dirname(output_file), exist_ok=True)
+                    except OSError:
+                        self.logger.warning('Failed to create subdirectory for output file')
+                        raise
+                # Delete any pre-existing version of output file        
+                if os.path.exists(output_file):
+                    os.remove(output_file)
                 
-            out_data_source = out_driver.CreateDataSource(self.outfile)
-            out_layer = out_data_source.CreateLayer(self.outfile, geom_type=ogr.wkbPolygon)
+            out_data_source = out_driver.CreateDataSource(output_file)
+            out_layer = out_data_source.CreateLayer(output_file, geom_type=ogr.wkbPolygon)
             feature_defn = out_layer.GetLayerDefn()
     
             # Create grid cells
@@ -144,8 +207,17 @@ class FishNet:
                 ring_x_right_origin = ring_x_right_origin + grid_width
         
             # Save and close data sources
+            fishnet_output = None
+            if self.outfile is None:
+                # Read the memory buffer GeoJSON
+                # See https://gis.stackexchange.com/questions/318916/getting-png-binary-data-from-gdaldataset
+                stat = gdal.VSIStatL(output_file, gdal.VSI_STAT_SIZE_FLAG)
+                fishnet_output = gdal.VSIFReadL(1, stat.size, gdal.VSIFOpenL(output_file, 'r'))
+            else:
+                fishnet_output = output_file
             out_data_source = None
             self.logger.info('Finished writing fishnet output')
+            return fishnet_output
         except:
             self.logger.warning(traceback.format_exc())
             
