@@ -18,7 +18,7 @@ from osgeo import osr
 from osgeo import gdal
 
 import traceback, logging
-from classes import Config, Fishnet
+from classes import Config, FishNet
 
 logging.basicConfig(
     level=Config.get('LOG_LEVEL'),
@@ -92,11 +92,17 @@ def main(
         LOGGER.info('Argument validation passed')
         try:
             # Read the supplied GeoJSON data into a DataFrame
-            gdf = geopandas.GeoDataFrame(geojson_data)
+            input_data = geopandas.GeoDataFrame(geojson_data)
             # Create the fishnet
             if bounding_box is not None:
                 # Use the supplied British National Grid bounding box
-                
+                fishnet_geojson = FishNet(bbox=bounding_box, netsize=resolution)   
+            else:
+                # Use the LAD codes
+                fishnet_geojson = FishNet(lad=area_codes, netsize=resolution)
+            fishnet = geopandas.GeoDataFrame(fishnet_geojson)
+            
+            # TO DO
         except:
             LOGGER.warning(traceback.format_exc())
     else:
