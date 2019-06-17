@@ -90,7 +90,8 @@ class FishNet:
         v = Validator()
         args_ok = v.validate(args, self.ARG_SCHEMA)            
         if args_ok:
-            # Validated arguments ok                                 
+            # Validated arguments ok
+            self.logger.info('Argument validation passed')                              
             self.logger.info(', '.join('%s: %s' % arg for arg in args.items()))
             self.outfile   = outfile
             self.outformat = outformat
