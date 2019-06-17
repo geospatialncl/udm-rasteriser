@@ -13,6 +13,7 @@ import uuid
 import gdal, ogr
 from math import ceil
 import requests
+import json
 from geopandas import GeoDataFrame
 from cerberus import Validator
 from classes import Config
@@ -115,15 +116,18 @@ class FishNet:
             aoi = self.bbox
             if self.lad:
                 # Get the bounds from a (list of) Local Authority District boundary(s)/all
+                self.logger.info('Get boundary from list of LAD codes...')
                 try:
                     kvp = {
-                        'lad_codes': self.lad,
+                        'lad_codes': ','.join(self.lad),
                         'export_format': 'geojson',
                         'year': 2016
                     }
-                    api = '{}/{}/{}'.format(Config.get('NISMOD_DB_API_URL'), 'boundaries', 'lads')                    
-                    r = requests.get(api, params=kvp, auth=(Config.get('NISMOD_DB_USERNAME'), Config.get('NISMOD_DB_PASSWORD')))
-                    gdf = GeoDataFrame(r.json())
+                    api = '{}/{}/{}'.format(Config.get('NISMOD_DB_API_URL'), 'boundaries', 'lads')
+                    auth_username = Config.get('NISMOD_DB_USERNAME')
+                    auth_password = Config.get('NISMOD_DB_PASSWORD')
+                    r = requests.get(api, params=kvp, auth=(auth_username, auth_password))
+                    gdf = GeoDataFrame(r.json()['features'])
                     aoi = gdf.total_bounds
                 except ValueError as api_err:
                     self.logger.warning(api_err)                    
@@ -175,7 +179,7 @@ class FishNet:
             countcols = 0
             while countcols < cols:
                 countcols += 1
-                self.logger.info('Generating column {}...'.format(countcols))
+                #self.logger.info('Generating column {}...'.format(countcols))
                 # Reset envelope for rows
                 ring_y_top = ring_y_top_origin
                 ring_y_bottom = ring_y_bottom_origin
@@ -183,7 +187,7 @@ class FishNet:
         
                 while countrows < rows:
                     countrows += 1
-                    self.logger.info('Row {}'.format(countrows))
+                    #self.logger.info('Row {}'.format(countrows))
                     ring = ogr.Geometry(ogr.wkbLinearRing)
                     ring.AddPoint(ring_x_left_origin, ring_y_top)
                     ring.AddPoint(ring_x_right_origin, ring_y_top)
@@ -221,6 +225,7 @@ class FishNet:
             return fishnet_output
         except:
             self.logger.warning(traceback.format_exc())
+            return None
             
             
             

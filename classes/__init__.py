@@ -10,3 +10,4 @@ Created on Thu Jun  6 15:17:03 2019
 
 from .config import Config
 from .fishnet import FishNet
+from .rasteriser import Rasteriser

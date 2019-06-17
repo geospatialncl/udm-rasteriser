@@ -16,7 +16,6 @@ class Config:
     
     # Project top-level directory
     __project_root = dirname(dirname(__file__))
-    print('*** {}'.format(__project_root))
     
     # Read API credentials from the (non-Git managed) api_credentials.ini file
     __ini_parser = configparser.ConfigParser()
@@ -39,7 +38,7 @@ class Config:
         'DATA_DIRECTORY'     : join(__project_root, 'data')
     }
     
-    __setters = ["log_level"]
+    __setters = ['LOG_LEVEL']
     
     @staticmethod
     def get(name):
