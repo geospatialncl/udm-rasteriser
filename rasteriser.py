@@ -106,11 +106,11 @@ def main(
             if bounding_box is not None:
                 # Use the supplied British National Grid bounding box
                 LOGGER.info('Generate fishnet GeoDataFrame from supplied bounding box...')
-                fishnet_geojson = FishNet(bbox=bounding_box, netsize=resolution)   
+                fishnet_geojson = FishNet(bbox=bounding_box, netsize=resolution).create()   
             else:
                 # Use the LAD codes
                 LOGGER.info('Generate fishnet GeoDataFrame from supplied bounding box...')
-                fishnet_geojson = FishNet(lad=area_codes, netsize=resolution)
+                fishnet_geojson = FishNet(lad=area_codes, netsize=resolution).create()
             fishnet = geopandas.GeoDataFrame(fishnet_geojson)
             LOGGER.info('Done')
             
@@ -158,7 +158,7 @@ def main(
             srs.ImportFromEPSG(27700)
             rasterised.SetProjection(srs.ExportToWkt())
             LOGGER.info('Set transform and projection, about to rasterise layer...')            
-            err = gdal.RasterizeLayer(rasterised, [1], ogr_source.GetLayer(0), options=["ATTRIBUTE=include_me"])
+            gdal.RasterizeLayer(rasterised, [1], ogr_source.GetLayer(0), options=["ATTRIBUTE=include_me"])
             LOGGER.info('Done')
             rasterised.FlushCache()
             rasterised = None

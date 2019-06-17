@@ -21,6 +21,6 @@ logging.basicConfig(
     filename=Config.get('LOG_FILE'),
     filemode='w')
 
-FishNet(outfile=None, outformat='GeoJSON', bbox=[414650, 563500, 429600, 575875]).create()
+FishNet(outfile='test_fishnet.json', outformat='GeoJSON', bbox=[414650, 563500, 429600, 575875]).create()
 
 # Then check in QGIS that we have something like what we want...
