@@ -12,9 +12,9 @@ import os, traceback, logging
 import uuid
 import gdal, ogr
 from math import ceil
+from io import BytesIO
 import requests
-import json
-from geopandas import GeoDataFrame
+import geopandas
 from cerberus import Validator
 from classes import Config
 
@@ -127,7 +127,11 @@ class FishNet:
                     auth_username = Config.get('NISMOD_DB_USERNAME')
                     auth_password = Config.get('NISMOD_DB_PASSWORD')
                     r = requests.get(api, params=kvp, auth=(auth_username, auth_password))
-                    gdf = GeoDataFrame(r.json()['features'])
+                    # Note: should be able to simply read r.json() into a GeoDataFrame, however it throws a ValueError
+                    # 'Mixing dicts with non-Series may lead to ambiguous ordering' which makes very little sense to me!
+                    # So we do it a roundabout way via the recipe at
+                    # https://gis.stackexchange.com/questions/225586/reading-raw-data-into-geopandas
+                    gdf = geopandas.read_file(BytesIO(r.content))
                     aoi = gdf.total_bounds
                 except ValueError as api_err:
                     self.logger.warning(api_err)                    

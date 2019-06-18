@@ -16,6 +16,7 @@ from osgeo import osr
 from osgeo import gdal
 
 import traceback, logging
+from os import path, remove
 from classes import Config, FishNet
 
 class Rasteriser:
@@ -124,6 +125,7 @@ class Rasteriser:
         """
         Generate the output raster dataset
         """
+        temp_shp = None
         try:
             # Read the supplied GeoJSON data into a DataFrame
             self.logger.info('Creating GeoDataFrame from input...')
@@ -193,3 +195,7 @@ class Rasteriser:
 
         except:
             self.logger.warning(traceback.format_exc())
+        finally:
+            self.logger.info('Removing temporary files...')
+            if path.exists(temp_shp):
+                remove(temp_shp)

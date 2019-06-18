@@ -12,7 +12,9 @@ from os import remove, path
 import uuid
 import unittest
 import logging
-import geopandas
+import requests
+import traceback
+from geopandas import GeoDataFrame
 
 from classes import Config, FishNet, Rasteriser
 
@@ -25,7 +27,6 @@ class TestFishNet(unittest.TestCase):
             datefmt=Config.get('LOG_DATE_FORMAT'),
             filename=Config.get('LOG_FILE'),
             filemode='w')
-
         self.logger = logging.getLogger('TestFishNet')
     
     def test_fishnet_bbox(self):
@@ -62,7 +63,7 @@ class TestFishNet(unittest.TestCase):
         geojson = FishNet(outfile=None, outformat='GeoJSON', bbox=[414650, 563500, 429600, 575875]).create()
         self.assertFalse(geojson is None)
         try:
-            geopandas.GeoDataFrame(geojson)
+            GeoDataFrame(geojson)
         except ValueError:
             self.fail('Returned GeoJSON could not be read into a GeoDataFrame')
         self.logger.info('Completed')
@@ -80,7 +81,51 @@ class TestFishNet(unittest.TestCase):
         remove(output_path)
         self.logger.info('Completed')
 
-
+class TestRasteriser(unittest.TestCase):
+    
+    def setUp(self):
+        logging.basicConfig(
+            level=Config.get('LOG_LEVEL'),
+            format=Config.get('LOG_FORMAT'),
+            datefmt=Config.get('LOG_DATE_FORMAT'),
+            filename=Config.get('LOG_FILE'),
+            filemode='w')
+        self.logger_r = logging.getLogger('TestRasteriser')
+    
+    def test_rasterise_from_nismod(self):
+        """
+        Get MasterMap data from NISMOD API as input GeoJSON data
+        """
+        self.logger_r.info('Rasteriser with API MasterMap data...')
+        output_file = 'test_output_raster.tif'
+        if path.exists(output_file):
+            remove(output_file)
+        try:
+            # Get MasterMap data, requesting classification codes 'General Surface', 'Natural Environment'
+            api_parms = {
+                'scale': 'lad',
+                'area_codes': ['E07000004','E07000008','E07000009','E07000011'],
+                'classification_codes': ['10056', '10111'],
+                'export_format': 'geojson'
+            }
+            api_url = '{}/mastermap/areas'.format(Config.get('NISMOD_DB_API_URL'))
+            auth_username = Config.get('NISMOD_DB_USERNAME')
+            auth_password = Config.get('NISMOD_DB_PASSWORD')
+            self.logger_r.info('Calling API to extract input GeoJSON data...')
+            r = requests.get(api_url, params=api_parms, auth=(auth_username, auth_password))
+            input_geojson = r.json()
+            # Call rasteriser
+            self.logger_r.info('Calling rasteriser...')
+            Rasteriser(
+                input_geojson,
+                area_codes=['E07000004','E07000008','E07000009','E07000011'],
+                output_filename=output_file                
+            ).create()
+            self.logger_r.info('Written output to {}/{}'.format(Config.get('DATA_DIRECTORY'), output_file))
+            self.logger_r.info('Completed')
+        except:
+            self.logger_r.warning(traceback.format_exc())
+            self.fail('Failing test due to unexpected exception')        
 
 if __name__ == '__main__':
     unittest.main()
