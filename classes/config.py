@@ -29,7 +29,7 @@ class Config:
         'NISMOD_DB_API_URL'  : 'https://www.nismod.ac.uk/api/data',                
         
         # Logging
-        'LOG_LEVEL'          : logging.DEBUG,
+        'LOG_LEVEL'          : logging.INFO,
         'LOG_FILE'           : join(__project_root, 'logs', 'rasteriser.log'),
         'LOG_FORMAT'         : '%(asctime)s %(name)-12s %(levelname)-8s %(message)s',
         'LOG_DATE_FORMAT'    : '%d-%m %H:%M',
