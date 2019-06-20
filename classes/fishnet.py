@@ -8,13 +8,15 @@ Created on Wed Jun  5 14:41:41 2019
 @author: ndh114
 """
 
-import os, traceback, logging
+from os import path, makedirs, remove
+import traceback, logging
 import uuid
 import gdal, ogr
 from math import ceil
 from io import BytesIO
 import requests
 import geopandas
+from geojson import loads
 from cerberus import Validator
 from classes import Config
 
@@ -111,6 +113,7 @@ class FishNet:
         https://pcjericks.github.io/py-gdalogr-cookbook/vector_layers.html#create-fishnet-grid
         
         """
+        gdal.UseExceptions();
         try:
             # Get bounding values
             aoi = self.bbox
@@ -159,21 +162,21 @@ class FishNet:
                 output_file = '/vsimem/{}.geojson'.format(uuid.uuid4().hex)
             else:
                 # Create output file                
-                if not os.path.isabs(output_file):
+                if not path.isabs(output_file):
                     # Relative path => so prepend data directory (does NOT handle making subdirectories here)
                     data_dir = Config.get('DATA_DIRECTORY')
                     self.logger.info('Relative path supplied, assume relative to data directory {}'.format(data_dir))
-                    output_file = os.path.join(data_dir, output_file)
+                    output_file = path.join(data_dir, output_file)
                 else:
                     # Absolute path => ensure all directories are present before writing
                     try:
-                        os.makedirs(os.path.dirname(output_file), exist_ok=True)
+                        makedirs(path.dirname(output_file), exist_ok=True)
                     except OSError:
                         self.logger.warning('Failed to create subdirectory for output file')
                         raise
                 # Delete any pre-existing version of output file        
-                if os.path.exists(output_file):
-                    os.remove(output_file)
+                if path.exists(output_file):
+                    remove(output_file)
                 
             out_data_source = out_driver.CreateDataSource(output_file)
             out_layer = out_data_source.CreateLayer(output_file, geom_type=ogr.wkbPolygon)
@@ -216,20 +219,32 @@ class FishNet:
                 ring_x_right_origin = ring_x_right_origin + grid_width
         
             # Save and close data sources
+            out_data_source = None
             fishnet_output = None
             if self.outfile is None:
-                # Read the memory buffer GeoJSON
-                # See https://gis.stackexchange.com/questions/318916/getting-png-binary-data-from-gdaldataset
-                stat = gdal.VSIStatL(output_file, gdal.VSI_STAT_SIZE_FLAG)
-                fishnet_output = gdal.VSIFReadL(1, stat.size, gdal.VSIFOpenL(output_file, 'r'))
+                # Read the memory buffer GeoJSON into Python dict structure
+                memfile_json = self.read_file(output_file).decode('utf-8')                
+                fishnet_output = loads(memfile_json)               
             else:
-                fishnet_output = output_file
-            out_data_source = None
+                fishnet_output = output_file                        
             self.logger.info('Finished writing fishnet output')
             return fishnet_output
         except:
             self.logger.warning(traceback.format_exc())
             return None
+        
+    def read_file(self, filename):
+        """
+        Read an in-memory file
+        https://gis.stackexchange.com/questions/255153/gdal-vectortranslate-returns-an-empty-file
+        also see:
+        https://gis.stackexchange.com/questions/318916/getting-png-binary-data-from-gdaldataset
+        """
+        vsifile = gdal.VSIFOpenL(filename,'r')
+        gdal.VSIFSeekL(vsifile, 0, 2)
+        vsileng = gdal.VSIFTellL(vsifile)
+        gdal.VSIFSeekL(vsifile, 0, 0)
+        return gdal.VSIFReadL(1, vsileng, vsifile)
             
             
             

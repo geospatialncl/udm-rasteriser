@@ -8,7 +8,7 @@ Created on Mon Jun 17 14:30:23 2019
 @author: ndh114
 """
 
-import geopandas
+from geopandas import GeoDataFrame, overlay
 import uuid
 from cerberus import Validator
 from osgeo import ogr
@@ -16,6 +16,7 @@ from osgeo import osr
 from osgeo import gdal
 
 import traceback, logging
+from geojson import loads, dumps
 from os import path, remove
 from classes import Config, FishNet
 
@@ -33,6 +34,7 @@ class Rasteriser:
         'bounding_box': {
             'type': 'list',
             'required': False,
+            'nullable': True,
             'schema': {
                 'type': 'float',
                 'min': -100000.0,
@@ -40,8 +42,12 @@ class Rasteriser:
             }
         },
         'scale': {
-            'type': 'list',
+            'type': 'string',
             'allowed': ['oa', 'lad', 'gor']
+        },
+        'output_filename': {
+            'type': 'string',
+            'required': True
         },
         'output_format': {
             'type': 'string',
@@ -94,10 +100,12 @@ class Rasteriser:
             'area_codes': area_codes,
             'bounding_box': bounding_box,
             'scale': scale,
+            'output_filename': output_filename,
             'output_format': output_format,
             'resolution': resolution,
             'area_threshold': area_threshold
         }        
+        self.logger.info(', '.join('%s: %s' % arg for arg in args.items()))
             
         # Validate arguments against the schema
         v = Validator()
@@ -105,7 +113,6 @@ class Rasteriser:
         if (args_ok):
             # Validated successfully
             self.logger.info('Argument validation passed')
-            self.logger.info(', '.join('%s: %s' % arg for arg in args.items()))
             self.geojson_data    = geojson_data
             self.area_codes      = area_codes
             self.bounding_box    = bounding_box
@@ -125,11 +132,22 @@ class Rasteriser:
         """
         Generate the output raster dataset
         """
+        gdal.UseExceptions();
         temp_shp = None
         try:
             # Read the supplied GeoJSON data into a DataFrame
             self.logger.info('Creating GeoDataFrame from input...')
-            input_data = geopandas.GeoDataFrame(self.geojson_data)
+            
+            #self.logger.debug('GeoJSON follows:')
+            #elf.logger.debug(self.geojson_data)
+            #self.logger.debug('GeoJSON end')
+            
+            if isinstance(self.geojson_data, str):
+                self.logger.info('Input GeoJSON is a string, not a dict => converting...')
+                self.geojson_data = loads(self.geojson_data)
+            #self.debug_dump_geojson_to_file('rasteriser_input_data_dump.json', self.geojson_data)
+            input_data = GeoDataFrame.from_features(self.geojson_data)
+            self.logger.debug(input_data.head(10))
             self.logger.info('Done')
             
             # Create the fishnet
@@ -141,12 +159,14 @@ class Rasteriser:
                 # Use the LAD codes
                 self.logger.info('Generate fishnet GeoDataFrame from supplied bounding box...')
                 fishnet_geojson = FishNet(lad=self.area_codes, netsize=self.resolution).create()
-            fishnet = geopandas.GeoDataFrame(fishnet_geojson)
+            #self.debug_dump_geojson_to_file('rasteriser_fishnet_data_dump.json', fishnet_geojson)
+            fishnet = GeoDataFrame.from_features(fishnet_geojson)
+            self.logger.debug(fishnet.head(10))            
             self.logger.info('Done')
             
             # Overlay intersection
             self.logger.info('Overlay data on fishnet using intersection...')
-            intersection = geopandas.overlay(fishnet, input_data, how='intersection')
+            intersection = overlay(fishnet, input_data, how='intersection')
             self.logger.info('Done')
         
             # Write area attribute into frame
@@ -156,12 +176,14 @@ class Rasteriser:
             
             # Create grid to rasterize via merge and assign an 'include' field based on the threshold
             self.logger.info('Doing merge...')
-            int_merge = fishnet.merge(intersection.groupby(['ID']).area.sum()/100.0, on='ID')
+            self.logger.debug(intersection.head(100))
+            int_merge = fishnet.merge(intersection.groupby(['id']).area.sum()/100.0, on='id')
+            
             for i, row in int_merge.iterrows():
                 if row['area'] > self.area_threshold:
                     int_merge.at[i, 'include_me'] = int(0) if self.invert else int(1)
                 else:
-                    int_merge.at[i, 'include_me'] = int(1) if self.invert else int(0)
+                    int_merge.at[i, 'include_me'] = int(1) if self.invert else int(0)            
             self.logger.info('Done')        
             
             self.logger.info('Compute bounds of dataset...')
@@ -197,5 +219,15 @@ class Rasteriser:
             self.logger.warning(traceback.format_exc())
         finally:
             self.logger.info('Removing temporary files...')
-            if path.exists(temp_shp):
+            if temp_shp is not None and path.exists(temp_shp):
                 remove(temp_shp)
+                
+    def debug_dump_geojson_to_file(self, filename, json_data):
+        """
+        Dump the given JSON data to a file for examination 
+        """
+        filepath = '{}/{}'.format(Config.get('DATA_DIRECTORY'), filename)
+        if path.exists(filepath):
+            remove(filepath)
+        with open(filepath, 'w') as file_out:
+            file_out.write(dumps(json_data))
