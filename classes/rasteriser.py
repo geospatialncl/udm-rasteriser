@@ -17,6 +17,7 @@ from osgeo import gdal
 
 import traceback, logging
 from geojson import loads, dumps
+from pathlib import Path
 from os import path, remove
 from classes import Config, FishNet
 
@@ -133,7 +134,7 @@ class Rasteriser:
         Generate the output raster dataset
         """
         gdal.UseExceptions();
-        temp_shp = None
+        temp_shp = '{}/{}.shp'.format(Config.get('DATA_DIRECTORY'), uuid.uuid4().hex)
         try:
             # Read the supplied GeoJSON data into a DataFrame
             self.logger.info('Creating GeoDataFrame from input...')
@@ -176,8 +177,8 @@ class Rasteriser:
             
             # Create grid to rasterize via merge and assign an 'include' field based on the threshold
             self.logger.info('Doing merge...')
-            self.logger.debug(intersection.head(100))
-            int_merge = fishnet.merge(intersection.groupby(['id']).area.sum()/100.0, on='id')
+            self.logger.debug(intersection.head(10))
+            int_merge = fishnet.merge(intersection.groupby(['FID']).area.sum()/100.0, on='FID')
             
             for i, row in int_merge.iterrows():
                 if row['area'] > self.area_threshold:
@@ -193,14 +194,13 @@ class Rasteriser:
             self.logger.info('xmin = {}, ymin = {}, xmax = {}, ymax = {}'.format(x_min, y_min, x_max, y_max))
             
             # Save as temporary shapefile (TO DO - understand what information is gained by doing this that is not present in GeoJSON)
-            self.logger.info('Write out temporary shapefile...')
-            temp_shp = '{}/{}.shp'.format(Config.get('DATA_DIRECTORY'), uuid.uuid4().hex)
+            self.logger.info('Write out temporary shapefile...')            
             int_merge.to_file(temp_shp)
-            self.logger.info('Written to {}'.format(int_merge))
+            self.logger.info('Written to {}'.format(temp_shp))
             
             # Open OGR dataset
             ogr_source = ogr.Open(temp_shp)
-            output_file = '{}/output_raster.tif'.format(Config.get('DATA_DIRECTORY'),self. output_filename)
+            output_file = '{}/{}'.format(Config.get('DATA_DIRECTORY'),self. output_filename)
             self.logger.info('Will write output raster to {}'.format(output_file))
             
             driver = gdal.GetDriverByName('GTiff')
@@ -214,13 +214,14 @@ class Rasteriser:
             self.logger.info('Done')
             rasterised.FlushCache()
             rasterised = None
-
         except:
             self.logger.warning(traceback.format_exc())
         finally:
             self.logger.info('Removing temporary files...')
-            if temp_shp is not None and path.exists(temp_shp):
-                remove(temp_shp)
+            filestem = Path(temp_shp).stem
+            for shpf in Path(Config.get('DATA_DIRECTORY')).glob('{}.*'.format(filestem)):
+                self.logger.info('Cleaning up {}'.format(shpf))
+                shpf.unlink()
                 
     def debug_dump_geojson_to_file(self, filename, json_data):
         """

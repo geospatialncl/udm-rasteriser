@@ -134,10 +134,11 @@ class FishNet:
                     # 'Mixing dicts with non-Series may lead to ambiguous ordering' which makes very little sense to me!
                     # So we do it a roundabout way via the recipe at
                     # https://gis.stackexchange.com/questions/225586/reading-raw-data-into-geopandas
+                    self.logger.info('NISMOD API call completed')
                     gdf = geopandas.read_file(BytesIO(r.content))
                     aoi = gdf.total_bounds
-                except ValueError as api_err:
-                    self.logger.warning(api_err)                    
+                except ValueError:
+                    raise                    
             
             xmin, ymin, xmax, ymax = [float(value) for value in aoi]
             self.logger.info('Fishnet bounds : xmin {}, ymin {}, xmax {}, ymax {}'.format(xmin, ymin, xmax, ymax))
@@ -180,9 +181,14 @@ class FishNet:
                 
             out_data_source = out_driver.CreateDataSource(output_file)
             out_layer = out_data_source.CreateLayer(output_file, geom_type=ogr.wkbPolygon)
+            
+            # Add a FID field
+            id_field = ogr.FieldDefn('FID', ogr.OFTInteger)
+            out_layer.CreateField(id_field)            
             feature_defn = out_layer.GetLayerDefn()
     
             # Create grid cells
+            fid = 1
             countcols = 0
             while countcols < cols:
                 countcols += 1
@@ -205,10 +211,12 @@ class FishNet:
                     poly.AddGeometry(ring)
         
                     # Add new geom to layer
-                    out_feature = ogr.Feature(feature_defn)
+                    out_feature = ogr.Feature(feature_defn)                    
                     out_feature.SetGeometry(poly)
+                    out_feature.SetField('FID', fid)
                     out_layer.CreateFeature(out_feature)
                     out_feature = None
+                    fid += 1
         
                     # New envelope for next poly
                     ring_y_top = ring_y_top - grid_height
