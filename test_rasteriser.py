@@ -10,7 +10,6 @@ Created on Thu Jun  6 12:17:17 2019
 
 from os import remove, path
 import uuid
-import json
 import unittest
 import logging
 import requests
