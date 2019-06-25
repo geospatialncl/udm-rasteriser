@@ -23,7 +23,7 @@ from classes import Config, FishNet
 
 class Rasteriser:
     
-    ARG_SCHEMA = {
+    __ARG_SCHEMA = {
         'area_codes': {
             'type': 'list',
             'required': False,
@@ -78,21 +78,21 @@ class Rasteriser:
                   invert = True                           # True if output raster gets a '0' for areas > threshold
                   ):
         """
-        Constructor
-        
-        Keyword arguments:
-        geojson_data       -- extracted GeoJSON data
-        area_codes         -- boundary specified by area code list
-        bounding_box       -- boundary specified by bounding box as a list [xmin, ymin, xmax, ymax]
-        scale              -- scale to look at (oa|lad|gor) 
-        output_filename    -- output filename
-        output_format      -- raster output file format (GeoTIFF|ASCII)
-        resolution         -- fishnet sampling resolution in metres
-        area_threshold     -- minimum data area within a cell to trigger raster inclusion
-        invert             -- True if output raster gets a '0' for areas > threshold
-        
-        Returns:
-        full file path (output_filename supplied)
+        |  Constructor
+        |
+        |  Keyword arguments:
+        |  geojson_data       -- extracted GeoJSON data
+        |  area_codes         -- boundary specified by area code list
+        |  bounding_box       -- boundary specified by bounding box as a list [xmin, ymin, xmax, ymax]
+        |  scale              -- scale to look at (oa|lad|gor) 
+        |  output_filename    -- output filename
+        |  output_format      -- raster output file format (GeoTIFF|ASCII)
+        |  resolution         -- fishnet sampling resolution in metres
+        |  area_threshold     -- minimum data area within a cell to trigger raster inclusion
+        |  invert             -- True if output raster gets a '0' for areas > threshold
+        |  
+        |  Returns:
+        |  full file path (output_filename supplied)
         """
         
         self.logger = logging.getLogger('Raster generation') 
@@ -110,7 +110,7 @@ class Rasteriser:
             
         # Validate arguments against the schema
         v = Validator()
-        args_ok = v.validate(args, self.ARG_SCHEMA)
+        args_ok = v.validate(args, self.__ARG_SCHEMA)
         if (args_ok):
             # Validated successfully
             self.logger.info('Argument validation passed')
@@ -131,7 +131,7 @@ class Rasteriser:
         
     def create(self):
         """
-        Generate the output raster dataset
+        |  Generate the output raster dataset
         """
         gdal.UseExceptions();
         temp_shp = '{}/{}.shp'.format(Config.get('DATA_DIRECTORY'), uuid.uuid4().hex)

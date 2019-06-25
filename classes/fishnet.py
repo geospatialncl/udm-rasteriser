@@ -22,7 +22,7 @@ from classes import Config
 
 class FishNet:
 
-    ARG_SCHEMA = {
+    __ARG_SCHEMA = {
         'outfile': {
             'type': 'string',
             'required': False,
@@ -64,18 +64,18 @@ class FishNet:
                  bbox=[90000.0, 10000.0, 400000.0, 660000.0], 
                  netsize=100.0):
         """
-        Constructor
-        
-        Keyword arguments:
-        outfile    -- filename to write the fishnet output to (default None, indicating return the data as GeoJSON string)
-        outformat  -- ESRI Shapefile|GeoJSON, (default 'GeoJSON')
-        lad        -- Local Authority District code(s) to deduce bounds from ('all' to use all) 
-                      (default None, will be used preferentially to bbox if supplied)
-        bbox       -- Bounding box of interest (default to bounding box of England and Wales)
-        netsize    -- Resolution of the grid in metres (default 100.0)
-        
-        Returns:
-        full file path (outfile supplied), or GeoJSON string (outfile not supplied)
+        |  Constructor
+        |  
+        |  Keyword arguments:
+        |  outfile    -- filename to write the fishnet output to (default None, indicating return the data as GeoJSON string)
+        |  outformat  -- ESRI Shapefile|GeoJSON, (default 'GeoJSON')
+        |  lad        -- Local Authority District code(s) to deduce bounds from ('all' to use all) 
+        |                (default None, will be used preferentially to bbox if supplied)
+        |  bbox       -- Bounding box of interest (default to bounding box of England and Wales)
+        |  netsize    -- Resolution of the grid in metres (default 100.0)
+        |   
+        |  Returns:
+        |  full file path (outfile supplied), or GeoJSON string (outfile not supplied)
         """
         
         self.logger = logging.getLogger('Fishnet generation') 
@@ -91,7 +91,7 @@ class FishNet:
             'netsize': netsize
         }
         v = Validator()
-        args_ok = v.validate(args, self.ARG_SCHEMA)            
+        args_ok = v.validate(args, self.__ARG_SCHEMA)            
         if args_ok:
             # Validated arguments ok
             self.logger.info('Argument validation passed')                              
@@ -109,9 +109,8 @@ class FishNet:
         
     def create(self):
         """
-        Generate the fishnet dataset, based on the code at
-        https://pcjericks.github.io/py-gdalogr-cookbook/vector_layers.html#create-fishnet-grid
-        
+        |  Generate the fishnet dataset, based on the code at
+        |  https://pcjericks.github.io/py-gdalogr-cookbook/vector_layers.html#create-fishnet-grid        
         """
         gdal.UseExceptions();
         try:
