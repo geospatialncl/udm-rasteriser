@@ -57,5 +57,4 @@ in classes/config.py to use e.g. logging.DEBUG should result in some more inform
 
 ## Documentation
 
-[https://davidherbert2.github.io/udm-rasteriser/build/html/source/classes.html#module-classes.config](There is 
-class documentation in Sphinx hosted via GitHub Pages)
+[https://davidherbert2.github.io/udm-rasteriser/build/html/source/classes.html#module-classes.config](There is class documentation in Sphinx hosted via GitHub Pages)
