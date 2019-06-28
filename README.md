@@ -57,11 +57,6 @@ in classes/config.py to use e.g. logging.DEBUG should result in some more inform
 
 ## Documentation
 
-There is class documentation in Sphinx.  As of 28/06/2019 I haven't managed to figure out how to get the relative links to the 
-static content right so this displays correctly in GitHub Pages.  If you look in:
+There is class documentation in Sphinx.  It lives at:
 
-`
-docs/build/html/index.html
-`
-
-in your local cloned repo, you should get the proper experience!
+`https://davidherbert2.github.io/udm-rasteriser/build/html/source/classes.html#module-classes.config`
