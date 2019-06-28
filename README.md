@@ -39,8 +39,29 @@ run from the command line using:
 python test_rasteriser.py
 `
 
+The test methods give a few real-world examples of how to use the code.
+
 All output is written to a logfile in:
 
 `
 logs/rasteriser.log
 `
+
+If anything appears to be going wrong, editing the line:
+
+`
+'LOG_LEVEL'          : logging.INFO,
+`
+
+in classes/config.py to use e.g. logging.DEBUG should result in some more informative output on what the rasteriser is doing.
+
+## Documentation
+
+There is class documentation in Sphinx.  As of 28/06/2019 I haven't managed to figure out how to get the relative links to the 
+static content right so this displays correctly in GitHub Pages.  If you look in:
+
+`
+docs/build/html/index.html
+`
+
+in your local cloned repo, you should get the proper experience!
