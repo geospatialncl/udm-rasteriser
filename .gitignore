@@ -1,5 +1,5 @@
 data
-logs
+logs/*
 test_data_from_ali
 __pycache__
 experimental
