@@ -1,0 +1,234 @@
+
+<!DOCTYPE html>
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta charset="utf-8" />
+    <title>classes package &#8212; udm-rasteriser 1.0 documentation</title>
+    <link rel="stylesheet" href="_static/alabaster.css" type="text/css" />
+    <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
+    <script type="text/javascript" id="documentation_options" data-url_root="./" src="_static/documentation_options.js"></script>
+    <script type="text/javascript" src="_static/jquery.js"></script>
+    <script type="text/javascript" src="_static/underscore.js"></script>
+    <script type="text/javascript" src="_static/doctools.js"></script>
+    <script type="text/javascript" src="_static/language_data.js"></script>
+    <link rel="index" title="Index" href="genindex.html" />
+    <link rel="search" title="Search" href="search.html" />
+   
+  <link rel="stylesheet" href="_static/custom.css" type="text/css" />
+  
+  
+  <meta name="viewport" content="width=device-width, initial-scale=0.9, maximum-scale=0.9" />
+
+  </head><body>
+  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          
+
+          <div class="body" role="main">
+            
+  <div class="section" id="classes-package">
+<h1>classes package<a class="headerlink" href="#classes-package" title="Permalink to this headline">¶</a></h1>
+<div class="section" id="submodules">
+<h2>Submodules<a class="headerlink" href="#submodules" title="Permalink to this headline">¶</a></h2>
+</div>
+<div class="section" id="module-classes.config">
+<span id="classes-config-module"></span><h2>classes.config module<a class="headerlink" href="#module-classes.config" title="Permalink to this headline">¶</a></h2>
+<div class="line-block">
+<div class="line">System-wide configuration</div>
+<div class="line"><br /></div>
+<div class="line">Assumes the existence of the file ‘api_credentials.ini’ for accessing the NISMODDB++ API.  This should reside in</div>
+<div class="line">the same directory (‘classes’) as this file, and contain the following lines:</div>
+<div class="line"><br /></div>
+<div class="line">[API_CREDENTIALS]</div>
+<div class="line">username = &lt;api_username&gt;</div>
+<div class="line">password = &lt;api_password&gt;</div>
+<div class="line"><br /></div>
+<div class="line">Note that no extra quotation marks are required around the credentials.</div>
+<div class="line"><br /></div>
+<div class="line">Created on Wed Jun  5 16:22:55 2019</div>
+<div class="line"><br /></div>
+<div class="line">&#64;author: ndh114</div>
+</div>
+<dl class="class">
+<dt id="classes.config.Config">
+<em class="property">class </em><code class="sig-prename descclassname">classes.config.</code><code class="sig-name descname">Config</code><a class="headerlink" href="#classes.config.Config" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">object</span></code></p>
+<dl class="method">
+<dt id="classes.config.Config.get">
+<em class="property">static </em><code class="sig-name descname">get</code><span class="sig-paren">(</span><em class="sig-param">name</em><span class="sig-paren">)</span><a class="headerlink" href="#classes.config.Config.get" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="method">
+<dt id="classes.config.Config.set">
+<em class="property">static </em><code class="sig-name descname">set</code><span class="sig-paren">(</span><em class="sig-param">name</em>, <em class="sig-param">value</em><span class="sig-paren">)</span><a class="headerlink" href="#classes.config.Config.set" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+</dd></dl>
+
+</div>
+<div class="section" id="module-classes.fishnet">
+<span id="classes-fishnet-module"></span><h2>classes.fishnet module<a class="headerlink" href="#module-classes.fishnet" title="Permalink to this headline">¶</a></h2>
+<p>Fishnet creation class</p>
+<p>Created on Wed Jun  5 14:41:41 2019</p>
+<p>&#64;author: ndh114</p>
+<dl class="class">
+<dt id="classes.fishnet.FishNet">
+<em class="property">class </em><code class="sig-prename descclassname">classes.fishnet.</code><code class="sig-name descname">FishNet</code><span class="sig-paren">(</span><em class="sig-param">outfile=None, outformat='GeoJSON', lad=None, bbox=[90000.0, 10000.0, 400000.0, 660000.0], netsize=100.0</em><span class="sig-paren">)</span><a class="headerlink" href="#classes.fishnet.FishNet" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">object</span></code></p>
+<div class="line-block">
+<div class="line">Constructor</div>
+<div class="line"><br /></div>
+<div class="line">Keyword arguments:</div>
+<div class="line">outfile    – filename to write the fishnet output to (default None, indicating return the data as GeoJSON string)</div>
+<div class="line">outformat  – ESRI Shapefile|GeoJSON, (default ‘GeoJSON’)</div>
+<div class="line">lad        – Local Authority District code(s) to deduce bounds from (‘all’ to use all) </div>
+<div class="line-block">
+<div class="line">(default None, will be used preferentially to bbox if supplied)</div>
+</div>
+<div class="line">bbox       – Bounding box of interest (default to bounding box of England and Wales)</div>
+<div class="line">netsize    – Resolution of the grid in metres (default 100.0)</div>
+<div class="line"><br /></div>
+<div class="line">Returns:</div>
+<div class="line">full file path (outfile supplied), or GeoJSON string (outfile not supplied)</div>
+</div>
+<dl class="method">
+<dt id="classes.fishnet.FishNet.create">
+<code class="sig-name descname">create</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#classes.fishnet.FishNet.create" title="Permalink to this definition">¶</a></dt>
+<dd><div class="line-block">
+<div class="line">Generate the fishnet dataset, based on the code at</div>
+<div class="line"><a class="reference external" href="https://pcjericks.github.io/py-gdalogr-cookbook/vector_layers.html#create-fishnet-grid">https://pcjericks.github.io/py-gdalogr-cookbook/vector_layers.html#create-fishnet-grid</a>        </div>
+</div>
+</dd></dl>
+
+<dl class="method">
+<dt id="classes.fishnet.FishNet.read_file">
+<code class="sig-name descname">read_file</code><span class="sig-paren">(</span><em class="sig-param">filename</em><span class="sig-paren">)</span><a class="headerlink" href="#classes.fishnet.FishNet.read_file" title="Permalink to this definition">¶</a></dt>
+<dd><p>Read an in-memory file
+<a class="reference external" href="https://gis.stackexchange.com/questions/255153/gdal-vectortranslate-returns-an-empty-file">https://gis.stackexchange.com/questions/255153/gdal-vectortranslate-returns-an-empty-file</a>
+also see:
+<a class="reference external" href="https://gis.stackexchange.com/questions/318916/getting-png-binary-data-from-gdaldataset">https://gis.stackexchange.com/questions/318916/getting-png-binary-data-from-gdaldataset</a></p>
+</dd></dl>
+
+</dd></dl>
+
+</div>
+<div class="section" id="module-classes.rasteriser">
+<span id="classes-rasteriser-module"></span><h2>classes.rasteriser module<a class="headerlink" href="#module-classes.rasteriser" title="Permalink to this headline">¶</a></h2>
+<p>Rasteriser class</p>
+<p>Created on Mon Jun 17 14:30:23 2019</p>
+<p>&#64;author: ndh114</p>
+<dl class="class">
+<dt id="classes.rasteriser.Rasteriser">
+<em class="property">class </em><code class="sig-prename descclassname">classes.rasteriser.</code><code class="sig-name descname">Rasteriser</code><span class="sig-paren">(</span><em class="sig-param">geojson_data</em>, <em class="sig-param">area_codes='all'</em>, <em class="sig-param">bounding_box=None</em>, <em class="sig-param">fishnet=None</em>, <em class="sig-param">scale='lad'</em>, <em class="sig-param">output_filename='output_raster.tif'</em>, <em class="sig-param">output_format='GeoTIFF'</em>, <em class="sig-param">resolution=100.0</em>, <em class="sig-param">area_threshold=50.0</em>, <em class="sig-param">invert=True</em><span class="sig-paren">)</span><a class="headerlink" href="#classes.rasteriser.Rasteriser" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">object</span></code></p>
+<div class="line-block">
+<div class="line">Constructor</div>
+<div class="line"><br /></div>
+<div class="line">Keyword arguments:</div>
+<div class="line">geojson_data       – extracted GeoJSON data</div>
+<div class="line">area_codes         – boundary specified by area code list OR </div>
+<div class="line">bounding_box       – as a bounding box as a list [xmin, ymin, xmax, ymax] OR</div>
+<div class="line">fishnet            – as existing fishnet GeoJSON output from the FishNet class</div>
+<div class="line">scale              – scale to look at (oa|lad|gor) </div>
+<div class="line">output_filename    – output filename</div>
+<div class="line">output_format      – raster output file format (GeoTIFF|ASCII)</div>
+<div class="line">resolution         – fishnet sampling resolution in metres</div>
+<div class="line">area_threshold     – minimum data area within a cell to trigger raster inclusion</div>
+<div class="line">invert             – True if output raster gets a ‘0’ for areas &gt; threshold</div>
+<div class="line"><br /></div>
+<div class="line">Returns:</div>
+<div class="line">full file path (output_filename supplied)</div>
+</div>
+<dl class="method">
+<dt id="classes.rasteriser.Rasteriser.create">
+<code class="sig-name descname">create</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#classes.rasteriser.Rasteriser.create" title="Permalink to this definition">¶</a></dt>
+<dd><div class="line-block">
+<div class="line">Generate the output raster dataset</div>
+</div>
+</dd></dl>
+
+<dl class="method">
+<dt id="classes.rasteriser.Rasteriser.debug_dump_geojson_to_file">
+<code class="sig-name descname">debug_dump_geojson_to_file</code><span class="sig-paren">(</span><em class="sig-param">filename</em>, <em class="sig-param">json_data</em><span class="sig-paren">)</span><a class="headerlink" href="#classes.rasteriser.Rasteriser.debug_dump_geojson_to_file" title="Permalink to this definition">¶</a></dt>
+<dd><p>Dump the given JSON data to a file for examination</p>
+</dd></dl>
+
+</dd></dl>
+
+</div>
+<div class="section" id="module-classes">
+<span id="module-contents"></span><h2>Module contents<a class="headerlink" href="#module-classes" title="Permalink to this headline">¶</a></h2>
+<p>__init__.py</p>
+<p>Created on Thu Jun  6 15:17:03 2019</p>
+<p>&#64;author: ndh114</p>
+</div>
+</div>
+
+
+          </div>
+          
+        </div>
+      </div>
+      <div class="sphinxsidebar" role="navigation" aria-label="main navigation">
+        <div class="sphinxsidebarwrapper">
+<h1 class="logo"><a href="index.html">udm-rasteriser</a></h1>
+
+
+
+
+
+
+
+
+<h3>Navigation</h3>
+
+<div class="relations">
+<h3>Related Topics</h3>
+<ul>
+  <li><a href="index.html">Documentation overview</a><ul>
+  </ul></li>
+</ul>
+</div>
+<div id="searchbox" style="display: none" role="search">
+  <h3 id="searchlabel">Quick search</h3>
+    <div class="searchformwrapper">
+    <form class="search" action="search.html" method="get">
+      <input type="text" name="q" aria-labelledby="searchlabel" />
+      <input type="submit" value="Go" />
+    </form>
+    </div>
+</div>
+<script type="text/javascript">$('#searchbox').show(0);</script>
+
+
+
+
+
+
+
+
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="footer">
+      &copy;2019, David Herbert.
+      
+      |
+      Powered by <a href="http://sphinx-doc.org/">Sphinx 2.1.2</a>
+      &amp; <a href="https://github.com/bitprophet/alabaster">Alabaster 0.7.12</a>
+      
+      |
+      <a href="_sources/classes.rst.txt"
+          rel="nofollow">Page source</a>
+    </div>
+
+    
+
+    
+  </body>
+</html>
