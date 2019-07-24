@@ -78,7 +78,6 @@ class Rasteriser:
                   area_threshold = 50.0,                  # Minimum data area within a cell to trigger raster inclusion
                   invert = True                           # True if output raster gets a '0' for areas > threshold
                   ):
-        
         """
         |  Constructor
         |

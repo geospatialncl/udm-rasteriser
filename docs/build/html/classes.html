@@ -38,6 +38,12 @@
 <div class="section" id="module-classes.config">
 <span id="classes-config-module"></span><h2>classes.config module<a class="headerlink" href="#module-classes.config" title="Permalink to this headline">¶</a></h2>
 <p>System-wide configuration</p>
+<p>Assumes the existence of the file ‘api_credentials.ini’ for accessing the NISMODDB++ API.  This should reside in
+the same directory (‘classes’) as this file, and contain the following lines:</p>
+<p>[API_CREDENTIALS]
+username = &lt;api_username&gt;
+password = &lt;api_password&gt;</p>
+<p>Note that no extra quotation marks are required around the credentials.</p>
 <p>Created on Wed Jun  5 16:22:55 2019</p>
 <p>&#64;author: ndh114</p>
 <dl class="class">

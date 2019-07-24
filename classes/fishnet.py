@@ -63,7 +63,6 @@ class FishNet:
                  lad=None,
                  bbox=[90000.0, 10000.0, 400000.0, 660000.0], 
                  netsize=100.0):
-        
         """
         |  Constructor
         |  

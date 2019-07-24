@@ -3,6 +3,15 @@
 """
 System-wide configuration
 
+Assumes the existence of the file 'api_credentials.ini' for accessing the NISMODDB++ API.  This should reside in
+the same directory ('classes') as this file, and contain the following lines:
+    
+[API_CREDENTIALS]
+username = <api_username>
+password = <api_password>
+
+Note that no extra quotation marks are required around the credentials.
+
 Created on Wed Jun  5 16:22:55 2019
 
 @author: ndh114
