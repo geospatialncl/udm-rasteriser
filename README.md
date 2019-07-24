@@ -27,7 +27,7 @@ environment.yaml
 This can be trivially imported into Anaconda using:
 
 `
-conda env create environment.yaml
+conda env create -f environment.yaml
 `
 
 ## Testing

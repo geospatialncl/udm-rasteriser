@@ -68,8 +68,9 @@ class Rasteriser:
         
     def __init__(self, 
                   geojson_data,                           # Extracted GeoJSON data
-                  area_codes = 'all',                     # Boundary specified either by area codes
-                  bounding_box = None,                    # Bounding box as a list [xmin, ymin, xmax, ymax]
+                  area_codes = 'all',                     # Boundary specified either by area codes OR
+                  bounding_box = None,                    # As a bounding box [xmin, ymin, xmax, ymax] OR
+                  fishnet = None,                         # As existing FishNet GeoJSON output
                   scale = 'lad',                          # Scale to look at (oa|lad|gor) 
                   output_filename = 'output_raster.tif',  # Output filename
                   output_format = 'GeoTIFF',              # Raster output file format (GeoTIFF|ASCII)
@@ -82,8 +83,9 @@ class Rasteriser:
         |
         |  Keyword arguments:
         |  geojson_data       -- extracted GeoJSON data
-        |  area_codes         -- boundary specified by area code list
-        |  bounding_box       -- boundary specified by bounding box as a list [xmin, ymin, xmax, ymax]
+        |  area_codes         -- boundary specified by area code list OR 
+        |  bounding_box       -- as a bounding box as a list [xmin, ymin, xmax, ymax] OR
+        |  fishnet            -- as existing fishnet GeoJSON output from the FishNet class
         |  scale              -- scale to look at (oa|lad|gor) 
         |  output_filename    -- output filename
         |  output_format      -- raster output file format (GeoTIFF|ASCII)
@@ -151,14 +153,21 @@ class Rasteriser:
             self.logger.debug(input_data.head(10))
             self.logger.info('Done')
             
-            # Create the fishnet
+            # Create the fishnet if necessary
             if self.bounding_box is not None:
                 # Use the supplied British National Grid bounding box
                 self.logger.info('Generate fishnet GeoDataFrame from supplied bounding box...')
-                fishnet_geojson = FishNet(bbox=self.bounding_box, netsize=self.resolution).create()   
+                fishnet_geojson = FishNet(bbox=self.bounding_box, netsize=self.resolution).create()
+            elif self.fishnet is not None:
+                # Use a supplied fishnet output
+                self.logger.info('Generate fishnet GeoDataFrame from supplied GeoJSON...')
+                if isinstance(self.fishnet, str):
+                    self.logger.info('Input fishnet GeoJSON is a string, not a dict => converting...')
+                    self.fishnet = loads(self.fishnet)
+                fishnet_geojson = self.fishnet
             else:
                 # Use the LAD codes
-                self.logger.info('Generate fishnet GeoDataFrame from supplied bounding box...')
+                self.logger.info('Generate fishnet GeoDataFrame from supplied LAD codes...')
                 fishnet_geojson = FishNet(lad=self.area_codes, netsize=self.resolution).create()
             #self.debug_dump_geojson_to_file('rasteriser_fishnet_data_dump.json', fishnet_geojson)
             fishnet = GeoDataFrame.from_features(fishnet_geojson)
