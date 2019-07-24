@@ -114,11 +114,47 @@ class TestRasteriser(unittest.TestCase):
                 area_threshold=50.0                
             ).create()
             self.logger_r.info('Written output to {}/{}'.format(Config.get('DATA_DIRECTORY'), output_file))
+            self.assertTrue(path.exists(output_path))
+            self.assertTrue(path.getsize(output_path) > 0)
             self.logger_r.info('Completed')
         except:
             self.logger_r.warning(traceback.format_exc())
             self.fail('Failing test due to unexpected exception')  
-#    
+            
+    def test_rasterise_from_shp_and_fishnet_file(self):
+        """
+        Read inland water data from shapefile, using a fishnet generated previously
+        """
+        self.logger_r.info('Rasteriser with Inland Water MasterMap data from shapefile, using pre-generated fishnet...')
+        
+        try:
+            self.logger_r.info('Generate fishnet with GeoJSON string return...')
+            fishnet_geojson = FishNet(outfile=None, outformat='GeoJSON', bbox=[414650, 563500, 429600, 575875]).create()
+            self.assertFalse(fishnet_geojson is None)
+
+            output_file = 'test_water_output_raster_ex_fishnet.tif'
+            output_path = '{}/{}'.format(Config.get('DATA_DIRECTORY'), output_file)
+            if path.exists(output_path):
+                remove(output_path)
+                
+            # Get MasterMap data, requesting classification codes 'General Surface', 'Natural Environment'
+            gdf = GeoDataFrame.from_file('{}/inland_water_e08000021.shp'.format(Config.get('DATA_DIRECTORY')))
+            # Call rasteriser
+            self.logger_r.info('Calling rasteriser...')
+            Rasteriser(
+                gdf.to_json(),
+                fishnet=fishnet_geojson,
+                output_filename=output_file,
+                area_threshold=50.0                
+            ).create()
+            self.assertTrue(path.exists(output_path))
+            self.assertTrue(path.getsize(output_path) > 0)
+            self.logger_r.info('Written output to {}/{}'.format(Config.get('DATA_DIRECTORY'), output_file))
+            self.logger_r.info('Completed')
+        except:
+            self.logger_r.warning(traceback.format_exc())
+            self.fail('Failing test due to unexpected exception')  
+   
     def test_rasterise_from_nismod(self):
         """
         Get MasterMap data from NISMOD API as input GeoJSON data
@@ -149,6 +185,8 @@ class TestRasteriser(unittest.TestCase):
                 area_codes=['E07000004','E07000008','E07000009','E07000011'],
                 output_filename=output_file                
             ).create()
+            self.assertTrue(path.exists(output_path))
+            self.assertTrue(path.getsize(output_path) > 0)
             self.logger_r.info('Written output to {}/{}'.format(Config.get('DATA_DIRECTORY'), output_file))
             self.logger_r.info('Completed')
         except:

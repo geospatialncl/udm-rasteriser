@@ -68,7 +68,7 @@ class Rasteriser:
         
     def __init__(self, 
                   geojson_data,                           # Extracted GeoJSON data
-                  area_codes = 'all',                     # Boundary specified either by area codes OR
+                  area_codes = [],                        # Boundary specified either by area codes OR
                   bounding_box = None,                    # As a bounding box [xmin, ymin, xmax, ymax] OR
                   fishnet = None,                         # As existing FishNet GeoJSON output
                   scale = 'lad',                          # Scale to look at (oa|lad|gor) 
@@ -119,6 +119,7 @@ class Rasteriser:
             self.geojson_data    = geojson_data
             self.area_codes      = area_codes
             self.bounding_box    = bounding_box
+            self.fishnet         = fishnet
             self.scale           = scale
             self.output_filename = output_filename
             self.output_format   = output_format
@@ -165,10 +166,12 @@ class Rasteriser:
                     self.logger.info('Input fishnet GeoJSON is a string, not a dict => converting...')
                     self.fishnet = loads(self.fishnet)
                 fishnet_geojson = self.fishnet
-            else:
+            elif len(self.area_codes) > 0:
                 # Use the LAD codes
                 self.logger.info('Generate fishnet GeoDataFrame from supplied LAD codes...')
                 fishnet_geojson = FishNet(lad=self.area_codes, netsize=self.resolution).create()
+            else:
+                raise ValueError('No boundary information supplied - please supply fishnet GeoJSON, bounding box, or list of LAD codes')
             #self.debug_dump_geojson_to_file('rasteriser_fishnet_data_dump.json', fishnet_geojson)
             fishnet = GeoDataFrame.from_features(fishnet_geojson)
             self.logger.debug(fishnet.head(10))            
