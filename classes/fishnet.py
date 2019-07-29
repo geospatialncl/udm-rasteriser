@@ -11,6 +11,7 @@ Created on Wed Jun  5 14:41:41 2019
 from os import path, makedirs, remove
 import traceback, logging
 import uuid
+from osgeo import osr
 import gdal, ogr
 from math import ceil
 from io import BytesIO
@@ -179,7 +180,9 @@ class FishNet:
                     remove(output_file)
                 
             out_data_source = out_driver.CreateDataSource(output_file)
-            out_layer = out_data_source.CreateLayer(output_file, geom_type=ogr.wkbPolygon)
+            srs = osr.SpatialReference()
+            srs.ImportFromEPSG(27700)
+            out_layer = out_data_source.CreateLayer(output_file, srs=srs, geom_type=ogr.wkbPolygon)
             
             # Add a FID field
             id_field = ogr.FieldDefn('FID', ogr.OFTInteger)
