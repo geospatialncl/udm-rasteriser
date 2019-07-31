@@ -63,6 +63,10 @@ class Rasteriser:
             'type': 'float',
             'min': 0.0,
             'max': 100.0
+        },
+        'nodata': {
+            'type': 'integer',
+            'allowed': [0, 1]
         }
     }
         
@@ -70,13 +74,14 @@ class Rasteriser:
                   geojson_data,                           # Extracted GeoJSON data
                   area_codes = [],                        # Boundary specified either by area codes OR
                   bounding_box = None,                    # As a bounding box [xmin, ymin, xmax, ymax] OR
-                  fishnet = None,                         # As existing FishNet GeoJSON output
+                  fishnet = None,                         # An existing FishNet GeoJSON output
                   scale = 'lad',                          # Scale to look at (oa|lad|gor) 
                   output_filename = 'output_raster.tif',  # Output filename
                   output_format = 'GeoTIFF',              # Raster output file format (GeoTIFF|ASCII)
                   resolution = 100.0,                     # Fishnet sampling resolution in metres
                   area_threshold = 50.0,                  # Minimum data area within a cell to trigger raster inclusion
-                  invert = True                           # True if output raster gets a '0' for areas > threshold
+                  invert = True,                          # True if output raster gets a '0' for areas > threshold
+                  nodata = 1                              # Value for nodata pixels
                   ):
         """
         |  Constructor
@@ -92,6 +97,7 @@ class Rasteriser:
         |  resolution         -- fishnet sampling resolution in metres
         |  area_threshold     -- minimum data area within a cell to trigger raster inclusion
         |  invert             -- True if output raster gets a '0' for areas > threshold
+        |  nodata             -- Value for nodata pixels (doesn't take account of 'invert' above!)
         |  
         |  Returns:
         |  full file path (output_filename supplied)
@@ -106,7 +112,8 @@ class Rasteriser:
             'output_filename': output_filename,
             'output_format': output_format,
             'resolution': resolution,
-            'area_threshold': area_threshold
+            'area_threshold': area_threshold,
+            'nodata': nodata
         }        
         self.logger.info(', '.join('%s: %s' % arg for arg in args.items()))
             
@@ -126,6 +133,7 @@ class Rasteriser:
             self.resolution      = resolution
             self.area_threshold  = area_threshold
             self.invert          = invert
+            self.nodata          = nodata
         else:
             # Validation fails, log errors
             self.logger.warning('Argument validation failed, errors follow:')
@@ -193,6 +201,7 @@ class Rasteriser:
             int_merge = fishnet.merge(intersection.groupby(['FID']).area.sum()/100.0, on='FID')
             
             for i, row in int_merge.iterrows():
+                self.logger.debug('{} has area {}'.format(i, row['area']))
                 if row['area'] > self.area_threshold:
                     int_merge.at[i, 'include_me'] = int(0) if self.invert else int(1)
                 else:
@@ -215,17 +224,26 @@ class Rasteriser:
             output_file = '{}/{}'.format(Config.get('DATA_DIRECTORY'),self. output_filename)
             self.logger.info('Will write output raster to {}'.format(output_file))
             
+            # Create raster dataset and set projection
             driver = gdal.GetDriverByName('GTiff')
             rasterised = driver.Create(output_file, xdim, ydim, 1, gdal.GDT_Byte)
             rasterised.SetGeoTransform((x_min, self.resolution, 0, y_max, 0, -self.resolution))
             srs = osr.SpatialReference()
             srs.ImportFromEPSG(27700)
             rasterised.SetProjection(srs.ExportToWkt())
+            
+            # Set nodata values 
+            band = rasterised.GetRasterBand(1)
+            band.SetNoDataValue(self.nodata)
+            band.Fill(self.nodata)
+            
+            # Do rasterisation
             self.logger.info('Set transform and projection, about to rasterise layer...')            
             gdal.RasterizeLayer(rasterised, [1], ogr_source.GetLayer(0), options=["ATTRIBUTE=include_me"])
             self.logger.info('Done')
             rasterised.FlushCache()
             rasterised = None
+            ogr_source = None
         except:
             self.logger.warning(traceback.format_exc())
         finally:
