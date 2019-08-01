@@ -182,6 +182,7 @@ class Rasteriser:
                 raise ValueError('No boundary information supplied - please supply fishnet GeoJSON, bounding box, or list of LAD codes')
             #self.debug_dump_geojson_to_file('rasteriser_fishnet_data_dump.json', fishnet_geojson)
             fishnet = GeoDataFrame.from_features(fishnet_geojson)
+            x_min, y_min, x_max, y_max = fishnet.total_bounds
             self.logger.debug(fishnet.head(10))            
             self.logger.info('Done')
             
@@ -209,7 +210,7 @@ class Rasteriser:
             self.logger.info('Done')        
             
             self.logger.info('Compute bounds of dataset...')
-            x_min, y_min, x_max, y_max = int_merge.total_bounds
+            #x_min, y_min, x_max, y_max = int_merge.total_bounds
             xdim = int((x_max - x_min) / self.resolution)
             ydim = int((y_max - y_min) / self.resolution)
             self.logger.info('xmin = {}, ymin = {}, xmax = {}, ymax = {}'.format(x_min, y_min, x_max, y_max))
@@ -234,7 +235,7 @@ class Rasteriser:
             
             # Set nodata values 
             band = rasterised.GetRasterBand(1)
-            band.SetNoDataValue(self.nodata)
+            #band.SetNoDataValue(self.nodata)
             band.Fill(self.nodata)
             
             # Do rasterisation
