@@ -34,8 +34,8 @@ class Config:
     __conf = {
             
         # NISMOD-DB++ API  
-        'NISMOD_DB_USERNAME' : os.getenv('USERNAME') #__ini_parser['API_CREDENTIALS']['username'],
-        'NISMOD_DB_PASSWORD' : os.getenv('PASSWORD') #__ini_parser['API_CREDENTIALS']['password'],
+        'NISMOD_DB_USERNAME' : os.getenv('USERNAME'), #__ini_parser['API_CREDENTIALS']['username'],
+        'NISMOD_DB_PASSWORD' : os.getenv('PASSWORD'), #__ini_parser['API_CREDENTIALS']['password'],
         'NISMOD_DB_API_URL'  : 'https://www.nismod.ac.uk/api/data',
         
         # Logging
