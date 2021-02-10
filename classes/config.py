@@ -19,6 +19,7 @@
 
 import logging
 import configparser
+import os
 from os.path import dirname, join
 
 class Config:
@@ -33,9 +34,9 @@ class Config:
     __conf = {
             
         # NISMOD-DB++ API  
-        'NISMOD_DB_USERNAME' : __ini_parser['API_CREDENTIALS']['username'],
-        'NISMOD_DB_PASSWORD' : __ini_parser['API_CREDENTIALS']['password'],
-        'NISMOD_DB_API_URL'  : 'https://www.nismod.ac.uk/api/data',                
+        'NISMOD_DB_USERNAME' : os.getenv('USERNAME') #__ini_parser['API_CREDENTIALS']['username'],
+        'NISMOD_DB_PASSWORD' : os.getenv('PASSWORD') #__ini_parser['API_CREDENTIALS']['password'],
+        'NISMOD_DB_API_URL'  : 'https://www.nismod.ac.uk/api/data',
         
         # Logging
         'LOG_LEVEL'          : logging.INFO,
