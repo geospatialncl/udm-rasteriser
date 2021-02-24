@@ -67,6 +67,9 @@ class Rasteriser:
         'nodata': {
             'type': 'integer',
             'allowed': [0, 1]
+        },
+        'fishnet_uid': {
+            'type': 'string'
         }
     }
         
@@ -81,7 +84,8 @@ class Rasteriser:
                   resolution = 100.0,                     # Fishnet sampling resolution in metres
                   area_threshold = 50.0,                  # Minimum data area within a cell to trigger raster inclusion
                   invert = True,                          # True if output raster gets a '0' for areas > threshold
-                  nodata = 1                              # Value for nodata pixels
+                  nodata = 1,                             # Value for nodata pixels
+                  fishnet_uid = 'FID'                     # Unique ID field in fishnet
                   ):
         """
         |  Constructor
@@ -98,7 +102,8 @@ class Rasteriser:
         |  area_threshold     -- minimum data area within a cell to trigger raster inclusion
         |  invert             -- True if output raster gets a '0' for areas > threshold
         |  nodata             -- Value for nodata pixels (doesn't take account of 'invert' above!)
-        |  
+        |  fishnet_uid        -- Unique ID field in fishnet
+        |
         |  Returns:
         |  full file path (output_filename supplied)
         """
@@ -113,7 +118,8 @@ class Rasteriser:
             'output_format': output_format,
             'resolution': resolution,
             'area_threshold': area_threshold,
-            'nodata': nodata
+            'nodata': nodata,
+            'fishnet_uid': fishnet_uid
         }        
         self.logger.info(', '.join('%s: %s' % arg for arg in args.items()))
             
@@ -134,6 +140,7 @@ class Rasteriser:
             self.area_threshold  = area_threshold
             self.invert          = invert
             self.nodata          = nodata
+            self.fishnet_uid = fishnet_uid
         else:
             # Validation fails, log errors
             self.logger.warning('Argument validation failed, errors follow:')
@@ -199,7 +206,7 @@ class Rasteriser:
             # Create grid to rasterize via merge and assign an 'include' field based on the threshold
             self.logger.info('Doing merge...')
             self.logger.debug(intersection.head(10))
-            int_merge = fishnet.merge(intersection.groupby(['FID']).area.sum()/100.0, on='FID')
+            int_merge = fishnet.merge(intersection.groupby([self.fishnet_uid]).area.sum()/100.0, on=self.fishnet_uid)
             
             for i, row in int_merge.iterrows():
                 self.logger.debug('{} has area {}'.format(i, row['area']))
