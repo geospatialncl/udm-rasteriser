@@ -1,0 +1,8 @@
+gdal==2.3.3
+geopandas
+geojson
+rtree
+requests
+cerberus
+uuid
+osgeo
