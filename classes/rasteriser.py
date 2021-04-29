@@ -210,7 +210,7 @@ class Rasteriser:
 
             # Set output values
 
-            use_threshold = True
+            use_threshold = False
             if use_threshold:
                 for i, row in int_merge.iterrows():
                     self.logger.debug('{} has area {}'.format(i, row['area']))

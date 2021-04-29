@@ -4,7 +4,7 @@ RUN apt-get -y install libgdal-dev
 COPY requirements.txt /
 
 RUN pip install -r requirements.txt
-RUN git clone dafni https://github.com/geospatialncl/udm-rasteriser
+RUN git clone --branch docker https://github.com/geospatialncl/udm-rasteriser
 
 COPY run.py /
 RUN mkdir /data_
