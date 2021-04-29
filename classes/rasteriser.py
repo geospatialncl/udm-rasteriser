@@ -219,8 +219,10 @@ class Rasteriser:
                     else:
                         int_merge.at[i, 'include_me'] = int(1) if self.invert else int(0)
             else:
-                # do something, or do nothing????
-                pass
+                # add area value for output
+                for i, row in int_merge.iterrows():
+                    int_merge.at[i, 'include_me'] = row['area']
+
             self.logger.info('Done')        
             
             self.logger.info('Compute bounds of dataset...')
