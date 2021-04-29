@@ -207,13 +207,20 @@ class Rasteriser:
             self.logger.info('Doing merge...')
             self.logger.debug(intersection.head(10))
             int_merge = fishnet.merge(intersection.groupby([self.fishnet_uid]).area.sum()/100.0, on=self.fishnet_uid)
-            
-            for i, row in int_merge.iterrows():
-                self.logger.debug('{} has area {}'.format(i, row['area']))
-                if row['area'] > self.area_threshold:
-                    int_merge.at[i, 'include_me'] = int(0) if self.invert else int(1)
-                else:
-                    int_merge.at[i, 'include_me'] = int(1) if self.invert else int(0)            
+
+            # Set output values
+
+            use_threshold = True
+            if use_threshold:
+                for i, row in int_merge.iterrows():
+                    self.logger.debug('{} has area {}'.format(i, row['area']))
+                    if row['area'] > self.area_threshold:
+                        int_merge.at[i, 'include_me'] = int(0) if self.invert else int(1)
+                    else:
+                        int_merge.at[i, 'include_me'] = int(1) if self.invert else int(0)
+            else:
+                # do something, or do nothing????
+                pass
             self.logger.info('Done')        
             
             self.logger.info('Compute bounds of dataset...')
